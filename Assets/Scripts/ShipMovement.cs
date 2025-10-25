@@ -1,23 +1,63 @@
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
 public class ShipMovement : MonoBehaviour
 {
-    public float speed = 10f;
-    public float rotationSpeed = 100f;
+    public InputActionAsset playerControls;
+
+    InputAction moveAction;
+    InputAction rotateAction;
+    GameObject player;
+    Rigidbody playerRB;
+
+    [SerializeField] int speed = 500; 
+
+    float move;
+    float rotate;
+
+
+    void OnEnable()
+    {
+        playerControls.Enable();
+       
+    }
+
+    void OnDisable()
+    {
+        playerControls.Disable();
+    }
+
+    void Awake()
+    {
+        player = this.gameObject;
+        playerRB = GetComponent<Rigidbody>();
+        rotateAction = playerControls.FindAction("Rotation");
+        moveAction = playerControls.FindAction("Move");
+    }
 
     void Update()
     {
+        ReadValues();
+        MovingForward();
+        RotateShip();
         
-        Vector2 moveInput = Vector2.zero;
-        Vector2 rotateInput = Vector2.zero;
+    }
 
-        Vector3 moveDirection = transform.forward * moveInput.y * speed * Time.deltaTime;
-        transform.position += moveDirection;
-        Debug.Log(moveDirection);
+    private void ReadValues()
+    {
+        move = moveAction.ReadValue<float>();
+        rotate = rotateAction.ReadValue<float>();
+        
+    }
 
-        float rotationAmount = rotateInput.x * rotationSpeed * Time.deltaTime;
-        transform.Rotate(0, rotationAmount, 0);
+    void MovingForward()
+    {
+        playerRB.AddForce(0f, 0f, move * speed * Time.deltaTime);
+    }
+    void RotateShip()
+    {
+        playerRB.AddTorque(0, rotate * speed * Time.deltaTime, 0);
     }
 }
